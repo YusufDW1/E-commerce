@@ -4,10 +4,6 @@ use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 use App\Http\Controllers\ProductController;
 
-Route::get('/apalah', function () {
-    return "Putra suwe men instal laravel";
-});
-
 Route::get('/products', function () {
     return "Halaman Produk";
 });
@@ -28,28 +24,43 @@ Route::middleware(['auth'])->group(function () {
     Volt::route('settings/appearance', 'settings.appearance')->name('settings.appearance');
 });
 
-Route::get('/ecommerce', function () {
-    return view('ecommerce.index');
-});
-
-Route::get('/ecommerce/create', function () {
-    return view('ecommerce.create');
-});
-
-Route::get('/ecommerce/edit', function ($id) {
-    return view('ecommerce.edit');
-});
-
-Route::prefix('ecommerce')->name('ecommerce.')->group(function () {
-    Route::resource('products', ProductController::class)->except(['show']);
-});
-
 Route::resource('products', ProductController::class)->except(['show']);
 
 Route::get('/', function () {
     $products = App\Models\Product::all();
     return view('welcome', compact('products'));
 });
+
+Route::get('/', function(){
+    $title = "Homepage";
+    return view('web.homepage',['title'=>$title]);
+   });
+Route::get('product', function(){
+    $title = "Product";
+    return view('web.product',['title'=>$title]);
+});
+Route::get('product/{slug}', function($slug){
+    $title = "Single Product";
+    return view('web.single_product',['title'=>$title,'slug'=>$slug]);
+});
+Route::get('categories', function(){
+    $title = "Categories";
+    return view('web.categories',['title'=>$title]);
+});
+Route::get('category/{slug}', function($slug){
+    $title = "Single Category";
+    return view('web.single_category',['title'=>$title,'slug'=>$slug]);
+});
+Route::get('cart', function(){
+    $title = "Cart";
+    return view('web.cart',['title'=>$title]);
+});
+Route::get('checkout', function(){
+    $title = "Checkout";
+    return view('web.checkout',['title'=>$title]);
+});
+   
+   
 
 Route::resource('products', ProductController::class)->except(['show']);
 
