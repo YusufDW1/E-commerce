@@ -1,4 +1,3 @@
 <x-layout>
-    <h1>{{ $title ?? 'Produk' }}</h1>
-    <p>Daftar produk akan ditampilkan di sini.</p>
+    <h3>Ini adalah halaman products</h3>
 </x-layout>

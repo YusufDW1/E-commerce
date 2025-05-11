@@ -1,7 +1,7 @@
 @import 'tailwindcss';
 @import '../../vendor/livewire/flux/dist/flux.css';
 
-@source "../views";
+@source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../vendor/livewire/flux-pro/stubs/**/*.blade.php';
 @source '../../vendor/livewire/flux/stubs/**/*.blade.php';
@@ -47,22 +47,7 @@
     }
 }
 
-.product-card {
-    transition: transform 0.3s, box-shadow 0.3s;
-    border: none;
-}
-
-.product-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-}
-
-.card-img-top {
-    height: 200px;
-    object-fit: cover;
-}
-
-[data-flux-field] {
+[data-flux-field]:not(ui-radio) {
     @apply grid gap-2;
 }
 
@@ -75,7 +60,6 @@ textarea:focus[data-flux-control],
 select:focus[data-flux-control] {
     @apply outline-hidden ring-2 ring-accent ring-offset-2 ring-offset-accent-foreground;
 }
-
 
 /* \[:where(&)\]:size-4 {
     @apply size-4;
