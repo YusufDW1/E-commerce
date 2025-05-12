@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomepageController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProductCategoryController;
-
+use App\Http\Controllers\ProductController;
 
 
 //kode baru diubah menjadi seperti ini
@@ -19,12 +19,11 @@ Route::get('checkout', [HomepageController::class, 'checkout']);
 
 
 Route::group(['prefix'=>'dashboard'], function(){
-    Route::get('/',[DashboardController::class,'index'])->name('dashboard');
-
-    Route::resource('categories',ProductCategoryController::class);
-    Route::get('products',[DashboardController::class,'products'])->name('products');
-
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    Route::resource('categories', ProductCategoryController::class);
+    Route::resource('products', ProductController::class);
 })->middleware(['auth', 'verified']);
+
 
 
 Route::middleware(['auth'])->group(function () {
