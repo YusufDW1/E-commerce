@@ -40,7 +40,6 @@ class ProductController extends Controller
         // Membuat slug otomatis jika tidak diberikan
         $slug = $request->slug ?: Str::slug($request->name);
 
-        // Menyimpan data produk ke database
         Product::create([
             'name' => $request->name,
             'slug' => $slug,
