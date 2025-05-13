@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+
 use App\Models\Category;
-use App\Models\Product;
 
 class HomepageController extends Controller
 {
@@ -12,67 +12,56 @@ class HomepageController extends Controller
     {
         $categories = Category::all();
         
-        return view('web.homepage', [
+        return view('web.homepage',[
             'categories' => $categories,
-            'title' => 'Homepage'
+            'title'=>'Homepage'
         ]);
     }
 
     public function products()
     {
-        $products = Product::all();
-        $title = 'Products';
+        $categories = Product::all();
 
-        return view('web.products', [
+        return view('web.products',[
             'products' => $products,
-            'title' => $title
+            'title'=>$title
         ]);
     }
 
-    public function product($slug)
-    {
-        $product = Product::where('slug', $slug)->firstOrFail();
-        $title = $product->name;
-
+    public function product($slug){
         return view('web.product', [
-            'product' => $product,
-            'title' => $title
+            'slug' => $slug
         ]);
     }
 
     public function categories()
     {
-        $categories = Category::all();
-        $title = 'Categories';
-
-        return view('web.categories', [
-            'categories' => $categories,
-            'title' => $title
+        return view('web.categories',[
+            'title'=>'Categories'
         ]);
     }
 
     public function category($slug)
     {
-        $category = Category::where('slug', $slug)->firstOrFail();
-        $title = $category->name;
+        $category = Category::find($slug);
 
         return view('web.category_by_slug', [
-            'category' => $category,
-            'title' => $title
+            'slug' => $slug, 
+            'category' => $category
         ]);
     }
 
     public function cart()
     {
-        return view('web.cart', [
-            'title' => 'Cart'
+        return view('web.cart',[
+            'title'=>'Cart'
         ]);
     }
 
     public function checkout()
     {
-        return view('web.checkout', [
-            'title' => 'Checkout'
+        return view('web.checkout',[
+            'title'=>'Checkout'
         ]);
     }
 }
