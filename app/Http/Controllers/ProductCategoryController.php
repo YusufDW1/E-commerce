@@ -3,16 +3,14 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Categories;
+use App\Models\Category;
+use Illuminate\Support\Str;
 
 class ProductCategoryController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index(Request $request)
     {
-        $categories = Categories::query()
+        $categories = Category::query()
             ->when($request->filled('q'), function ($query) use ($request) {
                 $query->where('name', 'like', '%' . $request->q . '%')
                       ->orWhere('description', 'like', '%' . $request->q . '%');
@@ -25,146 +23,110 @@ class ProductCategoryController extends Controller
         ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         return view('dashboard.categories.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        /**
-         * cek validasi input
-         */
-        $validator = \Validator::make($request->all(), [
+        $request->validate([
             'name' => 'required|string|max:255',
-            'slug' => 'required|string|max:255',
-            'description' => 'required'
+            'slug' => 'required|string|max:255|unique:product_categories,slug',
+            'description' => 'nullable|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Maks 2MB
         ]);
 
-        /**
-         * jika validasi gagal,
-         * maka redirect kembali dengan pesan error
-         */
-        if ($validator->fails()) {
-            return redirect()->back()->with(
-                [
-                    'errors'=>$validator->errors(),
-                    'errorMessage'=>'Validasi Error, Silahkan lengkapi data terlebih dahulu'
-                ]
-            );
+        try {
+            $data = [
+                'name' => $request->name,
+                'slug' => $request->slug ?: Str::slug($request->name),
+                'description' => $request->description,
+            ];
+
+            if ($request->hasFile('image')) {
+                $imagePath = $request->file('image')->store('uploads/categories', 'public');
+                $data['image'] = $imagePath;
+            }
+
+            Category::create($data);
+
+            return redirect()->route('categories.index')
+                ->with('success', 'Category created successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withErrors(['error' => 'Failed to create category: ' . $e->getMessage()])
+                ->withInput();
         }
-
-        $category = new Categories;
-        $category->name = $request->name;
-        $category->slug = $request->slug;
-        $category->description = $request->description;
-        
-        if ($request->hasFile('image')) {
-            $image = $request->file('image');
-            $imageName = time() . '_' . $image->getClientOriginalName();
-            $imagePath = $image->storeAs('uploads/categories', $imageName, 'public');
-            $category->image = $imagePath;
-        }
-
-        $category->save();
-
-        return redirect()->back()
-            ->with(
-                [
-                    'successMessage'=>'Data Berhasil Disimpan'
-                ]
-            );
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
-        $category = Categories::find($id);
+        $category = Category::findOrFail($id);
+        return view('dashboard.categories.show', compact('category'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(string $id)
     {
-        $category = Categories::find($id);
-
-        return view('dashboard.categories.edit',[
-            'category'=>$category
-        ]);
+        $category = Category::findOrFail($id);
+        return view('dashboard.categories.edit', compact('category'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
-        /**
-         * cek validasi input
-         */
-        $validator = \Validator::make($request->all(), [
+        $request->validate([
             'name' => 'required|string|max:255',
-            'slug' => 'required|string|max:255',
-            'description' => 'required'
+            'slug' => 'required|string|max:255|unique:product_categories,slug,' . $id,
+            'description' => 'nullable|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        /**
-         * jika validasi gagal,
-         * maka redirect kembali dengan pesan error
-         */
-        if ($validator->fails()) {
-            return redirect()->back()->with(
-                [
-                    'errors'=>$validator->errors(),
-                    'errorMessage'=>'Validasi Error, Silahkan lengkapi data terlebih dahulu'
-                ]
-            );
+        try {
+            $category = Category::findOrFail($id);
+            $data = [
+                'name' => $request->name,
+                'slug' => $request->slug,
+                'description' => $request->description,
+            ];
+
+            if ($request->hasFile('image')) {
+                // Hapus gambar lama jika ada
+                if ($category->image && \Storage::disk('public')->exists($category->image)) {
+                    \Storage::disk('public')->delete($category->image);
+                }
+                $imagePath = $request->file('image')->store('uploads/categories', 'public');
+                $data['image'] = $imagePath;
+            }
+
+            $category->update($data);
+
+            return redirect()->route('categories.index')
+                ->with('success', 'Category updated successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withErrors(['error' => 'Failed to update category: ' . $e->getMessage()])
+                ->withInput();
         }
-
-        $category = Categories::find($id);
-        $category->name = $request->name;
-        $category->slug = $request->slug;
-        $category->description = $request->description;
-
-        if ($request->hasFile('image')) {
-            $image = $request->file('image');
-            $imageName = time() . '_' . $image->getClientOriginalName();
-            $imagePath = $image->storeAs('uploads/categories', $imageName, 'public');
-            $category->image = $imagePath;
-        }
-
-        $category->save();
-
-        return redirect()->back()
-            ->with(
-                [
-                    'successMessage'=>'Data Berhasil Disimpan'
-                ]
-            );
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
-        $category = Categories::find($id);
+        try {
+            $category = Category::findOrFail($id);
+            if ($category->products()->exists()) {
+                return redirect()->back()
+                    ->withErrors(['error' => 'Cannot delete category because it has associated products.']);
+            }
+            if ($category->image && \Storage::disk('public')->exists($category->image)) {
+                \Storage::disk('public')->delete($category->image);
+            }
+            $category->delete();
 
-        $category->delete();
-
-        return redirect()->back()
-            ->with(
-                [
-                    'successMessage'=>'Data Berhasil Dihapus'
-                ]
-            );
+            return redirect()->route('categories.index')
+                ->with('success', 'Category deleted successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withErrors(['error' => 'Failed to delete category: ' . $e->getMessage()]);
+        }
     }
 }

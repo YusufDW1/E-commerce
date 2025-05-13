@@ -12,9 +12,14 @@ class Product extends Model
         'image_url', 'is_active'
     ];
 
+    protected $casts = [
+        'is_active' => 'boolean',
+        'price' => 'float',
+    ];
+
     public function category()
     {
-        return $this->belongsTo(Categories::class, 'product_category_id');
+        return $this->belongsTo(Category::class, 'product_category_id');
     }
 
     public function orderDetails()

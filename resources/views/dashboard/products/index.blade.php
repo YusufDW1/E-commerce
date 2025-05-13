@@ -1,13 +1,26 @@
 <x-layouts.app :title="__('Products')">
     <div class="relative mb-6 w-full">
         <flux:heading size="xl">Products</flux:heading>
-        <flux:subheading size="lg" class="mb-6">Manage data Products</flux:subheading>
+        <flux:subheading size="lg" class="mb-6">Manage Products</flux:subheading>
         <flux:separator variant="subtle" />
     </div>
 
+    @if (session('success'))
+        <flux:badge color="lime" class="mb-3 w-full">{{ session('success') }}</flux:badge>
+    @endif
+    @if ($errors->any())
+        <flux:badge color="red" class="mb-3 w-full">
+            <ul>
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </flux:badge>
+    @endif
+
     <div class="flex justify-between items-center mb-4">
         <div>
-            <form action="{{ route('products.index') }}" method="get">
+            <form action="{{ route('products.index') }}" method="GET">
                 @csrf
                 <flux:input icon="magnifying-glass" name="q" placeholder="Search Products" class="w-64" />
             </form>
@@ -27,6 +40,7 @@
                 <th class="p-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-200">SKU</th>
                 <th class="p-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-200">Price</th>
                 <th class="p-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-200">Stock</th>
+                <th class="p-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-200">Image</th>
                 <th class="p-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-200">Category</th>
                 <th class="p-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-200">Description</th>
                 <th class="p-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-200">Actions</th>
@@ -40,7 +54,16 @@
                 <td class="p-4">{{ $product->sku }}</td>
                 <td class="p-4">Rp {{ number_format($product->price, 2, ',', '.') }}</td>
                 <td class="p-4">{{ $product->stock }}</td>
-                <td class="p-4">{{ $product->category->name }}</td>
+                <td class="p-4">
+                    @if($product->image_url)
+                        <img src="{{ $product->image_url }}" alt="{{ $product->name }}" class="h-10 w-10 object-cover rounded">
+                    @else
+                        <div class="h-10 w-10 bg-gray-200 flex items-center justify-center rounded">
+                            <span class="text-gray-500 text-sm">N/A</span>
+                        </div>
+                    @endif
+                </td>
+                <td class="p-4">{{ $product->category ? $product->category->name : 'N/A' }}</td>
                 <td class="p-4">{{ $product->description }}</td>
                 <td class="p-4">
                     <flux:dropdown>
@@ -61,4 +84,8 @@
             @endforeach
         </tbody>
     </table>
+
+    <div class="mt-3">
+        {{ $products->links() }}
+    </div>
 </x-layouts.app>

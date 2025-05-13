@@ -4,13 +4,13 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-use App\Models\Categories;
+use App\Models\Category;
 
 class HomepageController extends Controller
 {
     public function index()
     {
-        $categories = Categories::all();
+        $categories = Category::all();
         
         return view('web.homepage',[
             'categories' => $categories,
@@ -42,7 +42,7 @@ class HomepageController extends Controller
 
     public function category($slug)
     {
-        $category = Categories::find($slug);
+        $category = Category::find($slug);
 
         return view('web.category_by_slug', [
             'slug' => $slug, 
